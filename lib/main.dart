@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'presentation/routes/app_router.dart';
+import 'presentation/theme/app_theme.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    // ProviderScope es OBLIGATORIO para que Riverpod funcione en toda la app
+    const ProviderScope(
+      child: MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -9,12 +17,12 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return MaterialApp.router(
+      title: 'DogScanner',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme().getTheme(),
+      // Conectamos GoRouter
+      routerConfig: appRouter, 
     );
   }
 }
