@@ -4,56 +4,68 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/camera_provider.dart';
+import '../providers/tflite_provider.dart';
 
 class ScannerScreen extends ConsumerWidget {
   const ScannerScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el estado de inicialización de la cámara
+    // Escuchamos la cámara y arrancamos la IA en el fondo
     final cameraAsync = ref.watch(cameraControllerProvider);
+    final tfliteAsync = ref.watch(tfliteInitProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Dog Scanner'),
+        title: const Text('Dog Scanner', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      extendBodyBehindAppBar: true, // Para que la cámara ocupe toda la pantalla
+      extendBodyBehindAppBar: true, 
       body: cameraAsync.when(
         data: (controller) {
           return Stack(
             children: [
-              // Vista previa de la cámara a pantalla completa
               SizedBox(
                 width: double.infinity,
                 height: double.infinity,
                 child: CameraPreview(controller),
               ),
               
-              // Botón para tomar la foto
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 40.0),
+                  padding: const EdgeInsets.only(bottom: 50.0),
                   child: FloatingActionButton.large(
                     backgroundColor: Colors.white,
                     child: const Icon(Icons.camera_alt, color: Colors.black, size: 40),
                     onPressed: () async {
-                      // 1. Tomamos la foto
-                      final dataSource = ref.read(cameraDataSourceProvider);
-                      final imagePath = await dataSource.takePicture();
+                      if (tfliteAsync.isLoading || tfliteAsync.hasError) return;
+
+                      final cameraSource = ref.read(cameraDataSourceProvider);
+                      final imagePath = await cameraSource.takePicture();
                       
                       if (imagePath != null && context.mounted) {
-                        // Aquí, temporalmente mostraremos un mensaje. 
-                        // En el siguiente issue, pasaremos esta foto al modelo de IA.
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Foto tomada con éxito 📸')),
-                        );
-                        
-                        // Para cuando el modelo de IA esté listo, navegaremos así:
-                        // context.push('/results', extra: imagePath);
+                        try {
+                          final tfliteSource = ref.read(tfliteDataSourceProvider);
+                          final result = await tfliteSource.analyzeDogImage(imagePath);
+
+                          if (context.mounted && result != null) {
+                            final breed = result['breed'];
+                            final confidence = result['confidence'] as double;
+                            
+                            // Navegamos directo sin mostrar mensajitos abajo
+                            context.push('/results', extra: {
+                              'breed': breed,
+                              'confidence': confidence,
+                              'imagePath': imagePath,
+                            }); 
+                          }
+                        } catch (e) {
+                          print("Error: $e");
+                        }
                       }
                     },
                   ),
@@ -63,21 +75,10 @@ class ScannerScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: Colors.white),
-              SizedBox(height: 20),
-              Text('Iniciando cámara...', style: TextStyle(color: Colors.white)),
-            ],
-          ),
+          child: CircularProgressIndicator(color: Colors.white),
         ),
         error: (error, stack) => Center(
-          child: Text(
-            'Error al abrir la cámara:\n$error',
-            style: const TextStyle(color: Colors.red),
-            textAlign: TextAlign.center,
-          ),
+          child: Text('Error en la cámara: $error', style: const TextStyle(color: Colors.red)),
         ),
       ),
     );

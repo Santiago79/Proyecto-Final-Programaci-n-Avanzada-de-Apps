@@ -12,16 +12,15 @@ void main() {
   );
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget { // Cambiado a ConsumerWidget
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) { // Agregado WidgetRef
     return MaterialApp.router(
-      title: 'DogScanner',
+      title: 'Scanner de Perros',
       debugShowCheckedModeBanner: false,
       theme: AppTheme().getTheme(),
-      // Conectamos GoRouter
       routerConfig: appRouter, 
     );
   }
