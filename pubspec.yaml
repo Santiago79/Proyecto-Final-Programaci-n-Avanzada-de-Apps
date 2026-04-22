@@ -8,11 +8,13 @@ environment:
 
 dependencies:
   camera: ^0.12.0+1
+  dio: ^5.9.2
   flutter:
     sdk: flutter
   flutter_riverpod: ^3.3.1
   go_router: ^17.2.2
-  path_provider: ^2.1.5
+  image: ^4.8.0
+  tflite_flutter: ^0.12.1
 
 dev_dependencies:
   flutter_test:
@@ -21,3 +23,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/models/model.tflite
+    - assets/models/labels.txt
