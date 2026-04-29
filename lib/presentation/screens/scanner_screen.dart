@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:proyecto_final/presentation/providers/camera_provider.dart';
 import '../providers/camera_provider.dart';
 import '../providers/tflite_provider.dart';
+
 
 // CAMBIO 1: Cambiamos a ConsumerStatefulWidget para manejar el estado visual del Zoom
 class ScannerScreen extends ConsumerStatefulWidget {
@@ -132,40 +134,80 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
               // ... (botón de captura) ...
               
               // 4. Botón de captura
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 30.0),
-                  child: FloatingActionButton.large(
-                    backgroundColor: Colors.white,
-                    child: const Icon(Icons.camera_alt, color: Colors.black, size: 40),
-                    onPressed: () async {
-                      if (tfliteAsync.isLoading || tfliteAsync.hasError) return;
+              // 4. Controles de captura y galería
+              Positioned(
+                bottom: 30,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // --- BOTÓN DE GALERÍA ---
+                    FloatingActionButton(
+                      heroTag: 'gallery_btn', // ⚠️ Obligatorio si usas más de un FAB
+                      backgroundColor: Colors.white24, // Semi-transparente
+                      elevation: 0,
+                      onPressed: () async {
+                        if (tfliteAsync.isLoading || tfliteAsync.hasError) return;
 
-                      final cameraSource = ref.read(cameraDataSourceProvider);
-                      final imagePath = await cameraSource.takePicture();
-                      
-                      if (imagePath != null && context.mounted) {
                         try {
-                          final tfliteSource = ref.read(tfliteDataSourceProvider);
-                          final result = await tfliteSource.analyzeDogImage(imagePath);
+                          final picker = ImagePicker();
+                          // Abrimos la galería de iOS/Android
+                          final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                          
+                          if (image != null && context.mounted) {
+                            final tfliteSource = ref.read(tfliteDataSourceProvider);
+                            final result = await tfliteSource.analyzeDogImage(image.path);
 
-                          if (context.mounted && result != null) {
-                            final breed = result['breed'];
-                            final confidence = result['confidence'] as double;
-                            
-                            context.push('/results', extra: {
-                              'breed': breed,
-                              'confidence': confidence,
-                              'imagePath': imagePath,
-                            }); 
+                            if (context.mounted && result != null) {
+                              context.push('/results', extra: {
+                                'breed': result['breed'],
+                                'confidence': result['confidence'] as double,
+                                'imagePath': image.path,
+                              }); 
+                            }
                           }
                         } catch (e) {
-                          print("Error: $e");
+                          print("Error seleccionando de galería: $e");
                         }
-                      }
-                    },
-                  ),
+                      },
+                      child: const Icon(Icons.photo_library, color: Colors.white, size: 28),
+                    ),
+
+                    // --- BOTÓN DE CÁMARA PRINCIPAL ---
+                    FloatingActionButton.large(
+                      heroTag: 'camera_btn',
+                      backgroundColor: Colors.white,
+                      onPressed: () async {
+                        if (tfliteAsync.isLoading || tfliteAsync.hasError) return;
+
+                        final cameraSource = ref.read(cameraDataSourceProvider);
+                        final imagePath = await cameraSource.takePicture();
+                        
+                        if (imagePath != null && context.mounted) {
+                          try {
+                            final tfliteSource = ref.read(tfliteDataSourceProvider);
+                            final result = await tfliteSource.analyzeDogImage(imagePath);
+
+                            if (context.mounted && result != null) {
+                              context.push('/results', extra: {
+                                'breed': result['breed'],
+                                'confidence': result['confidence'] as double,
+                                'imagePath': imagePath,
+                              }); 
+                            }
+                          } catch (e) {
+                            print("Error: $e");
+                          }
+                        }
+                      },
+                      child: const Icon(Icons.camera_alt, color: Colors.black, size: 40),
+                    ),
+
+                    // --- ESPACIO INVISIBLE ---
+                    // Sirve para balancear la fila y que el botón de cámara quede perfectamente en el centro
+                    const SizedBox(width: 56), 
+                  ],
                 ),
               ),
             ],
