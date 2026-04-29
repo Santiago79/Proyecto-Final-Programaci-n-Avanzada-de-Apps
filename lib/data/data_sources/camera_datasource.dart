@@ -3,18 +3,14 @@ import 'package:camera/camera.dart';
 class CameraDataSource {
   CameraController? _controller;
 
-  Future<CameraController> initializeCamera() async {
-    final cameras = await availableCameras();
-    // Forzamos el uso de la cámara trasera
-    final backCamera = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.back,
-      orElse: () => cameras.first,
-    );
-
+  // Ahora recibe la cámara exacta que queremos inicializar
+  Future<CameraController> initializeCamera(CameraDescription camera) async {
+    _controller?.dispose(); // Limpiamos la anterior si existía
+    
     _controller = CameraController(
-      backCamera,
+      camera,
       ResolutionPreset.high,
-      enableAudio: false,
+      enableAudio: false, 
     );
 
     await _controller!.initialize();
@@ -23,14 +19,8 @@ class CameraDataSource {
 
   Future<String?> takePicture() async {
     if (_controller == null || !_controller!.value.isInitialized) return null;
-    if (_controller!.value.isTakingPicture) return null;
-
-    try {
-      final XFile picture = await _controller!.takePicture();
-      return picture.path; // Retorna la ruta de la foto temporal
-    } catch (e) {
-      return null;
-    }
+    final file = await _controller!.takePicture();
+    return file.path;
   }
 
   void dispose() {
