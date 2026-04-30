@@ -67,7 +67,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             itemCount: favorites.length,
             itemBuilder: (context, index) {
               final fav = favorites[index];
-              final breed = fav['breed'].toString().toUpperCase();
+              final breedOriginal = fav['breed'].toString(); // Nombre original (minúsculas)
+              final breed = breedOriginal.toUpperCase(); // Nombre para mostrar (mayúsculas)
               final breedInfo = fav['breedInfo'] as Map<String, dynamic>?;
 
               return Card(
@@ -128,7 +129,7 @@ onTap: () async {
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.red),
                           onPressed: () async {
-                            await _favoritesService.removeFavorite(breed);
+                            await _favoritesService.removeFavorite(breedOriginal);
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('$breed eliminado')),

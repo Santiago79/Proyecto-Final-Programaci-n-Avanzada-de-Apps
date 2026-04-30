@@ -131,26 +131,6 @@ class _StatsScreenState extends State<StatsScreen> {
                       _buildWeeklyChart(),
                     ],
                     const SizedBox(height: 32),
-                    
-                    // Botón para historial completo
-                    Center(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const HistoryScreen()),
-                          );
-                        },
-                        icon: const Icon(Icons.history),
-                        label: const Text('Ver historial completo'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE85D04),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/data_sources/dog_api_datasouce.dart';
 import '../../data/data_sources/youtube_datasource.dart';
 import '../../services/history_service.dart';
+import '../../services/favorites_service.dart';
 
 class FavoriteDetailScreen extends StatefulWidget {
   final String breed;
@@ -22,6 +23,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
   final DogApiDataSource _dogApi = DogApiDataSource();
   final YouTubeDataSource _youtubeDataSource = YouTubeDataSource();
   final HistoryService _historyService = HistoryService();
+  final FavoritesService _favoritesService = FavoritesService();
   
   Map<String, dynamic>? _breedInfo;
   Map<String, String>? _videoData;
@@ -147,9 +149,12 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
     );
 
     if (shouldDelete == true) {
-      // Aquí llamas al método para eliminar de favoritos
-      // (debes pasar la función desde FavoritesScreen o usar un servicio)
-      Navigator.pop(context, true); // Regresar y notificar que se eliminó
+      // Convertir a minúsculas para eliminar correctamente
+      final breedLower = widget.breed.toLowerCase();
+      await _favoritesService.removeFavorite(breedLower);
+      if (mounted) {
+        Navigator.pop(context, true); // Regresar y notificar que se eliminó
+      }
     }
   }
 }
