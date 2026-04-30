@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:proyecto_final/presentation/screens/favorite_screen.dart';
 // Imports de pantallas
 import 'package:proyecto_final/presentation/screens/scanner_screen.dart';
 import 'package:proyecto_final/presentation/screens/history_screen.dart';
@@ -29,9 +30,9 @@ final appRouter = GoRouter(
           builder: (context, state) => const StatsScreen(),
         ),
         GoRoute(
-          path: '/history',
-          name: 'history',
-          builder: (context, state) => const HistoryScreen(),
+          path: '/favorites',
+          name: 'favorites',
+          builder: (context, state) => const FavoritesScreen(),
         ),
       ],
     ),

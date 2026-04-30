@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // 👈 Agregar este import
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'firebase_options.dart';
 import 'presentation/routes/app_router.dart';
 import 'presentation/theme/app_theme.dart';

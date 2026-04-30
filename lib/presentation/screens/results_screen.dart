@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:proyecto_final/models/scan_history.dart';
+import 'package:proyecto_final/presentation/widgets/favorite_button.dart';
 import 'package:proyecto_final/services/history_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Paquete para abrir YouTube
 import '../../data/data_sources/dog_api_datasouce.dart'; 
@@ -76,16 +77,23 @@ class _ResultsScreenState extends State<ResultsScreen> {
   );
 
   await _historyService.saveScan(scan);
-  print('✅ Escaneo guardado con imagen en la nube: $imageUrl');
+  
 }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Resultados del Escaneo'),
-        backgroundColor: const Color(0xFFE85D04), // Naranja USFQ
-      ),
+   appBar: AppBar(
+  title: const Text('Resultados del Escaneo'),
+  backgroundColor: const Color(0xFFE85D04),
+  actions: [
+    FavoriteButton(
+      breed: widget.breed,
+      imageUrl: _uploadedImageUrl ?? widget.breedInfo?['imageUrl'] ?? '',
+      breedInfo: widget.breedInfo ?? {},
+    ),
+  ],
+),
       body: SingleChildScrollView(
         child: Column(
           children: [

@@ -38,4 +38,10 @@ class HistoryService {
       await doc.reference.delete();
     }
   }
+
+  // Contar cuántas veces se ha escaneado una raza
+Future<int> getScanCountForBreed(String breed) async {
+  final snapshot = await _historyCollection.where('breed', isEqualTo: breed).get();
+  return snapshot.docs.length;
+}
 }
