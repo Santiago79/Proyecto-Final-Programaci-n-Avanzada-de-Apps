@@ -1,20 +1,63 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:proyecto_final/models/scan_history.dart';
+import 'package:proyecto_final/services/history_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Paquete para abrir YouTube
 import '../../data/data_sources/dog_api_datasouce.dart'; 
 import '../../data/data_sources/youtube_datasource.dart'; // Importa tu nuevo DataSource
 
-class ResultsScreen extends StatelessWidget {
+
+// Modifica la clase ResultsScreen a StatefulWidget
+class ResultsScreen extends StatefulWidget {
   final String breed;
   final double confidence;
   final String imagePath;
+  final Map<String, dynamic>? breedInfo; // Opcional, para guardar más info
+  final String? existingScanId; // Para actualizar un escaneo existente en lugar de crear uno nuevo
 
   const ResultsScreen({
-    super.key, 
-    required this.breed, 
-    required this.confidence, 
+    super.key,
+    required this.breed,
+    required this.confidence,
     required this.imagePath,
+    this.breedInfo,
+    this.existingScanId,
   });
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  final HistoryService _historyService = HistoryService();
+  bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingScanId == null) {
+      _saveToHistory(); // Guardar solo si no es una actualización
+    } else {
+      _isSaved = true; // Ya está guardado, no necesitamos guardar de nuevo
+    }
+    _saveToHistory(); // Guardar al abrir la pantalla
+  }
+
+  Future<void> _saveToHistory() async {
+    if (_isSaved) return;
+    _isSaved = true;
+
+    final scan = ScanHistory(
+      breed: widget.breed,
+      confidence: widget.confidence,
+      imagePath: widget.imagePath,
+      timestamp: DateTime.now(),
+      breedInfo: widget.breedInfo,
+      imageUrl: null, // Se puede actualizar después si quieres subir la imagen a Firebase Storage
+    );
+
+    await _historyService.saveScan(scan);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +70,16 @@ class ResultsScreen extends StatelessWidget {
         child: Column(
           children: [
             // 1. Imagen que tomaste con el iPhone
-            _LocalImageHeader(imagePath: imagePath),
+            _LocalImageHeader(imagePath: widget.imagePath),
 
             // 2. Título de la raza detectada por TFLite
             Text(
-              breed.toUpperCase(),
+              widget.breed.toUpperCase(),
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             
             Chip(
-              label: Text('${(confidence * 100).toStringAsFixed(1)}% de seguridad'),
+              label: Text('${(widget.confidence * 100).toStringAsFixed(1)}% de seguridad'),
               backgroundColor: Colors.green.shade100,
             ),
 
@@ -46,7 +89,7 @@ class ResultsScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: FutureBuilder(
-                future: DogApiDataSource().getBreedInfo(breed),
+                future: DogApiDataSource().getBreedInfo(widget.breed),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -68,7 +111,7 @@ class ResultsScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: FutureBuilder(
-                future: YouTubeDataSource().getCareVideoForBreed(breed),
+                future: YouTubeDataSource().getCareVideoForBreed(widget.breed),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator(color: Colors.red));
