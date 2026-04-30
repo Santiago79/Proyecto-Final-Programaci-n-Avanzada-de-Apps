@@ -14,10 +14,13 @@ class ScaffoldWithNavbar extends StatelessWidget {
         onTap: (index) {
           if (index == 0) context.go('/scanner');
           if (index == 1) context.go('/history');
+          if (index == 2) context.go('/stats'); // Cambiado a stats
         },
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scanner'),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Historial'),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Estadísticas'),
         ],
       ),
     );
@@ -27,6 +30,7 @@ class ScaffoldWithNavbar extends StatelessWidget {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/scanner')) return 0;
     if (location.startsWith('/history')) return 1;
+    if (location.startsWith('/stats')) return 2;
     return 0;
   }
 }

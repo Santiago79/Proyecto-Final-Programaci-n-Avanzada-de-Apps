@@ -13,20 +13,20 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final HistoryService _historyService = HistoryService();
+  bool _showAllHistory = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Historial de Escaneos'),
+        title: Text(_showAllHistory ? 'Historial Completo' : 'Últimos Escaneos'),
         backgroundColor: const Color(0xFFE85D04),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_sweep),
-            onPressed: _showClearConfirmationDialog,
-            tooltip: 'Borrar historial',
-          ),
-        ],
+        leading: _showAllHistory
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() => _showAllHistory = false),
+              )
+            : null,
       ),
       body: StreamBuilder<List<ScanHistory>>(
         stream: _historyService.getHistoryStream(),
@@ -75,16 +75,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
           }
 
           final historyList = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: historyList.length,
-            itemBuilder: (context, index) {
-              final scan = historyList[index];
-              return _HistoryCard(
-                scan: scan,
-                onDelete: () => _deleteScan(scan.id!),
-              );
-            },
+          final displayList = _showAllHistory ? historyList : historyList.take(10).toList();
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: displayList.length,
+                  itemBuilder: (context, index) {
+                    final scan = displayList[index];
+                    return _HistoryCard(
+                      scan: scan,
+                      onDelete: () => _deleteScan(scan.id!),
+                    );
+                  },
+                ),
+              ),
+              // Botón para ver todo el historial
+              if (!_showAllHistory && historyList.length > 10)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton.icon(
+                    onPressed: () => setState(() => _showAllHistory = true),
+                    icon: const Icon(Icons.list),
+                    label: Text('Ver todo el historial (${historyList.length})'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE85D04),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                  ),
+                ),
+            ],
           );
         },
       ),
@@ -98,37 +121,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
         const SnackBar(content: Text('Escaneo eliminado')),
       );
     }
-  }
-
-  void _showClearConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Borrar historial'),
-        content: const Text(
-          '¿Estás seguro de que quieres eliminar todo el historial? Esta acción no se puede deshacer.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _historyService.clearAllHistory();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Historial borrado')),
-                );
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Borrar todo'),
-          ),
-        ],
-      ),
-    );
   }
 }
 
