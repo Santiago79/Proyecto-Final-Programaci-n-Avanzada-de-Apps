@@ -9,6 +9,7 @@ environment:
 dependencies:
   camera: ^0.12.0+1
   dio: ^5.9.2
+  firebase_core: ^4.7.0
   flutter:
     sdk: flutter
   flutter_riverpod: ^3.3.1
