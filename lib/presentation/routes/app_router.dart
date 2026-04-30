@@ -34,10 +34,7 @@ final appRouter = GoRouter(
           name: 'favorites',
           builder: (context, state) => const FavoritesScreen(),
         ),
-      ],
-    ),
-    // Rutas que NO tienen la barra de navegación
-    GoRoute(
+         GoRoute(
       path: '/results',
       name: 'results',
       builder: (context, state) {
@@ -51,5 +48,9 @@ final appRouter = GoRouter(
         );
       },
     ),
+      ],
+    ),
+    // Rutas que NO tienen la barra de navegación
+   
   ],
 );

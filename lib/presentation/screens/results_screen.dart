@@ -86,13 +86,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
    appBar: AppBar(
   title: const Text('Resultados del Escaneo'),
   backgroundColor: const Color(0xFFE85D04),
-  actions: [
-    FavoriteButton(
-      breed: widget.breed,
-      imageUrl: _uploadedImageUrl ?? widget.breedInfo?['imageUrl'] ?? '',
-      breedInfo: widget.breedInfo ?? {},
-    ),
-  ],
+  
 ),
       body: SingleChildScrollView(
         child: Column(
@@ -106,10 +100,21 @@ class _ResultsScreenState extends State<ResultsScreen> {
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             
-            Chip(
-              label: Text('${(widget.confidence * 100).toStringAsFixed(1)}% de seguridad'),
-              backgroundColor: Colors.green.shade100,
-            ),
+            Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    Chip(
+      label: Text('${(widget.confidence * 100).toStringAsFixed(1)}% de seguridad'),
+      backgroundColor: Colors.green.shade100,
+    ),
+    const SizedBox(width: 12),
+    FavoriteButton(
+      breed: widget.breed,
+      imageUrl: _uploadedImageUrl ?? widget.breedInfo?['imageUrl'] ?? '',
+      breedInfo: widget.breedInfo ?? {},
+    ),
+  ],
+),
 
             const Divider(height: 40, indent: 20, endIndent: 20),
 
