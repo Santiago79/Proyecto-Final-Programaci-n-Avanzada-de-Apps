@@ -130,7 +130,20 @@ class _HistoryCard extends StatelessWidget {
   final VoidCallback onDelete;
 
   const _HistoryCard({required this.scan, required this.onDelete});
-
+  Widget _buildLocalImage() {
+  return Image.file(
+    File(scan.imagePath),
+    width: 60,
+    height: 60,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) => Container(
+      width: 60,
+      height: 60,
+      color: Colors.grey[300],
+      child: const Icon(Icons.broken_image, color: Colors.grey),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -160,21 +173,16 @@ class _HistoryCard extends StatelessWidget {
               // Miniatura de la imagen escaneada
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  File(scan.imagePath),
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
-                    );
-                  },
+                child: scan.imageUrl != null && scan.imageUrl!.isNotEmpty
+               ? Image.network(
+                scan.imageUrl!,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildLocalImage(),
+                 )
+                : _buildLocalImage(),
                 ),
-              ),
               const SizedBox(width: 12),
               // Información del escaneo
               Expanded(

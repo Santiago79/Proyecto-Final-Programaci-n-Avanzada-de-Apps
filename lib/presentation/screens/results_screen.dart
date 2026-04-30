@@ -5,7 +5,7 @@ import 'package:proyecto_final/services/history_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Paquete para abrir YouTube
 import '../../data/data_sources/dog_api_datasouce.dart'; 
 import '../../data/data_sources/youtube_datasource.dart'; // Importa tu nuevo DataSource
-
+import 'package:proyecto_final/services/storage_service.dart'; // Para subir la imagen a Firebase Storage
 
 // Modifica la clase ResultsScreen a StatefulWidget
 class ResultsScreen extends StatefulWidget {
@@ -30,7 +30,10 @@ class ResultsScreen extends StatefulWidget {
 
 class _ResultsScreenState extends State<ResultsScreen> {
   final HistoryService _historyService = HistoryService();
+  final StorageService _storageService = StorageService();
   bool _isSaved = false;
+  bool _isUploading = false;
+  String? _uploadedImageUrl;
 
   @override
   void initState() {
@@ -40,24 +43,41 @@ class _ResultsScreenState extends State<ResultsScreen> {
     } else {
       _isSaved = true; // Ya está guardado, no necesitamos guardar de nuevo
     }
-    _saveToHistory(); // Guardar al abrir la pantalla
   }
 
   Future<void> _saveToHistory() async {
-    if (_isSaved) return;
-    _isSaved = true;
+  if (_isSaved) return;
+  if (widget.existingScanId != null) return;
+  
+  _isSaved = true;
+  
+  // Mostrar indicador de carga
+  setState(() => _isUploading = true);
+  
+  // 1. Subir la imagen a Firebase Storage
+  final imageUrl = await _storageService.uploadScanImage(
+    widget.imagePath, 
+    widget.breed
+  );
+  
+  setState(() {
+    _uploadedImageUrl = imageUrl;
+    _isUploading = false;
+  });
+  
+  // 2. Guardar en Firestore con la URL
+  final scan = ScanHistory(
+    breed: widget.breed,
+    confidence: widget.confidence,
+    imagePath: widget.imagePath,
+    timestamp: DateTime.now(),
+    breedInfo: widget.breedInfo,
+    imageUrl: imageUrl, // 👈 Ahora sí guardamos la URL
+  );
 
-    final scan = ScanHistory(
-      breed: widget.breed,
-      confidence: widget.confidence,
-      imagePath: widget.imagePath,
-      timestamp: DateTime.now(),
-      breedInfo: widget.breedInfo,
-      imageUrl: null, // Se puede actualizar después si quieres subir la imagen a Firebase Storage
-    );
-
-    await _historyService.saveScan(scan);
-  }
+  await _historyService.saveScan(scan);
+  print('✅ Escaneo guardado con imagen en la nube: $imageUrl');
+}
 
   @override
   Widget build(BuildContext context) {
@@ -131,10 +151,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             // Placeholder para el Issue 8 (OpenAI)
             const Padding(
               padding: EdgeInsets.all(30.0),
-              child: Text(
-                'Próximamente: Chat con IA para saber más.',
-                style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-              ),
+             
             ),
             
             const SizedBox(height: 20), // Espacio final
