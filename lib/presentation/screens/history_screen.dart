@@ -159,6 +159,7 @@ class _HistoryCard extends StatelessWidget {
                 breed: scan.breed,
                 confidence: scan.confidence,
                 imagePath: scan.imagePath,
+                imageUrl: scan.imageUrl,
                 breedInfo: scan.breedInfo,
                 existingScanId: scan.id,
               ),

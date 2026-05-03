@@ -9,7 +9,7 @@ class CameraDataSource {
     
     _controller = CameraController(
       camera,
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       enableAudio: false, 
     );
 

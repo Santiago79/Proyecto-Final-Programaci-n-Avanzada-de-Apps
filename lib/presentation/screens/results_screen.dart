@@ -13,6 +13,7 @@ class ResultsScreen extends StatefulWidget {
   final String breed;
   final double confidence;
   final String imagePath;
+  final String? imageUrl;
   final Map<String, dynamic>? breedInfo; // Opcional, para guardar más info
   final String? existingScanId; // Para actualizar un escaneo existente en lugar de crear uno nuevo
 
@@ -21,6 +22,7 @@ class ResultsScreen extends StatefulWidget {
     required this.breed,
     required this.confidence,
     required this.imagePath,
+    this.imageUrl,
     this.breedInfo,
     this.existingScanId,
   });
@@ -55,12 +57,16 @@ class _ResultsScreenState extends State<ResultsScreen> {
   // Mostrar indicador de carga
   setState(() => _isUploading = true);
   
-  // 1. Subir la imagen a Firebase Storage
+// 1. Subir la imagen a Firebase Storage
   final imageUrl = await _storageService.uploadScanImage(
     widget.imagePath, 
     widget.breed
   );
   
+  // 🛡️ EL ESCUDO ANTI-CRASHEOS: 
+  // Si el usuario se salió de la pantalla antes de que terminara de subir, abortamos.
+  if (!mounted) return; 
+
   setState(() {
     _uploadedImageUrl = imageUrl;
     _isUploading = false;
@@ -82,6 +88,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String displayBreedName = (widget.breed.toLowerCase().contains('french bulldog'))
+        ? 'Eva 👑' // Le puse una coronita, ¡puedes cambiarle el emoji!
+        : widget.breed.toUpperCase();
     return Scaffold(
    appBar: AppBar(
   title: const Text('Resultados del Escaneo'),
@@ -92,11 +101,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
         child: Column(
           children: [
             // 1. Imagen que tomaste con el iPhone
-            _LocalImageHeader(imagePath: widget.imagePath),
+            _LocalImageHeader(imagePath: widget.imagePath, imageUrl: widget.imageUrl),
 
             // 2. Título de la raza detectada por TFLite
             Text(
-              widget.breed.toUpperCase(),
+              displayBreedName,
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             
@@ -179,7 +188,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
 class _LocalImageHeader extends StatelessWidget {
   final String imagePath;
-  const _LocalImageHeader({required this.imagePath});
+  final String? imageUrl; // Recibimos la URL
+
+  const _LocalImageHeader({required this.imagePath, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -193,10 +204,28 @@ class _LocalImageHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: AspectRatio(
           aspectRatio: 1, 
-          child: Image.file(
-            File(imagePath),
-            fit: BoxFit.cover, 
-          ),
+          // LÓGICA INTELIGENTE: Si hay URL, usamos la nube. Si no, usamos el archivo local.
+          child: (imageUrl != null && imageUrl!.isNotEmpty)
+              ? Image.network(
+                  imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildLocalFallback(), // Si la nube falla
+                )
+              : _buildLocalFallback(),
+        ),
+      ),
+    );
+  }
+
+  // Widget de apoyo para el archivo local
+  Widget _buildLocalFallback() {
+    return Image.file(
+      File(imagePath),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        color: Colors.grey[200],
+        child: const Center(
+          child: Icon(Icons.cloud_off, size: 50, color: Colors.grey),
         ),
       ),
     );
