@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:proyecto_final/models/scan_history.dart';
+import 'package:proyecto_final/data/models/scan_history.dart';
 import 'package:proyecto_final/presentation/screens/results_screen.dart';
-import 'package:proyecto_final/services/history_service.dart';
+import 'package:proyecto_final/data/data_sources/history_service.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});

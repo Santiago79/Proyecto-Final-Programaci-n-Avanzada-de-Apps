@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:proyecto_final/models/scan_history.dart';
+import 'package:proyecto_final/data/models/scan_history.dart';
 import 'package:proyecto_final/presentation/widgets/favorite_button.dart';
-import 'package:proyecto_final/services/history_service.dart';
+import 'package:proyecto_final/data/data_sources/history_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Paquete para abrir YouTube
 import '../../data/data_sources/dog_api_datasouce.dart'; 
 import '../../data/data_sources/youtube_datasource.dart'; // Importa tu nuevo DataSource
-import 'package:proyecto_final/services/storage_service.dart'; // Para subir la imagen a Firebase Storage
+import 'package:proyecto_final/data/data_sources/storage_service.dart'; // Para subir la imagen a Firebase Storage
 
 // Modifica la clase ResultsScreen a StatefulWidget
 class ResultsScreen extends StatefulWidget {

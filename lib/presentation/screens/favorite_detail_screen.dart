@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/data_sources/dog_api_datasouce.dart';
 import '../../data/data_sources/youtube_datasource.dart';
-import '../../services/history_service.dart';
-import '../../services/favorites_service.dart';
+import '../../data/data_sources/history_service.dart';
+import '../../data/data_sources/favorites_service.dart';
 
 class FavoriteDetailScreen extends StatefulWidget {
   final String breed;

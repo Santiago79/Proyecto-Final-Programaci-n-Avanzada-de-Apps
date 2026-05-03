@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_final/services/favorites_service.dart';
+import 'package:proyecto_final/data/data_sources/favorites_service.dart';
 
 class FavoriteButton extends StatefulWidget {
   final String breed;

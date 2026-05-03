@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_final/presentation/screens/favorite_detail_screen.dart';
-import 'package:proyecto_final/services/favorites_service.dart';
+import 'package:proyecto_final/data/data_sources/favorites_service.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
